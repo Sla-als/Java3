@@ -8,7 +8,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -216,7 +215,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         String password = new String(tfPassword.getPassword());
         int p = password.hashCode();
         thread.sendMessage(Library.getAuthRequest(login, password));
-        outMsgFromLogFile();
+       // outMsgFromLogFile();
     }
 
     @Override

@@ -7,6 +7,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ServerGUI extends JFrame implements ActionListener, Thread.UncaughtExceptionHandler, ChatServerListener {
     private static final int POS_X = 800;
@@ -20,6 +22,7 @@ public class ServerGUI extends JFrame implements ActionListener, Thread.Uncaught
     private final JPanel panelTop = new JPanel(new GridLayout(1, 2));
     private final JTextArea log = new JTextArea();
 
+    ExecutorService executorService = Executors.newFixedThreadPool(2);
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {

@@ -9,13 +9,15 @@ import ru.gb.jt.network.SocketThreadListener;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Vector;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ChatServer implements ServerSocketThreadListener, SocketThreadListener {
 
     ServerSocketThread server;
     ChatServerListener listener;
     private Vector<SocketThread> clients = new Vector<>();
-
+    ExecutorService executorService = Executors.newFixedThreadPool(3);
     public ChatServer(ChatServerListener listener) {
         this.listener = listener;
     }
@@ -68,11 +70,18 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
     public void onServerTimeout(ServerSocketThread thread, ServerSocket server) { }
 
     @Override
-    public void onSocketAccepted(ServerSocketThread thread, ServerSocket server, Socket socket) {
+    public void onSocketAccepted(ServerSocketThread thread, ServerSocket server, Socket socket)  {
+
         putLog("Client connected");
         String name = "Socket Thread " + socket.getInetAddress() + ":" + socket.getPort();
-        new ClientThread(this, name, socket);
-    }
+
+
+        //после получения запроса на подключение сервер создаёт сокет
+        // для общения с клиентом и отправляет его в отдельный поток
+
+        executorService.execute(new ClientThread(this, name, socket));
+        }
+
 
     @Override
     public void onServerException(ServerSocketThread thread, Throwable exception) {
@@ -92,11 +101,17 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
     public synchronized void onSocketStop(SocketThread thread) {
         ClientThread client = (ClientThread) thread;
         clients.remove(thread);
+
+        // закрытие пула потоков
+        executorService.shutdown();
+
+
         if (client.isAuthorized() && !client.isReconnected()) {
             sendToAllAuthorizedClients(Library.getTypeBroadcast("Server",
                     client.getNickname() + " disconnected"));
         }
         sendToAllAuthorizedClients(Library.getUserList(getUsers()));
+
     }
 
     @Override
